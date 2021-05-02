@@ -4,7 +4,7 @@ option go_package = "github.com/buffup/GolangTechTask/pkg/api";
 
 service VotingService {
   rpc CreateVoteable(CreateVoteableRequest) returns (CreateVoteableResponse) {}
-  rpc ListVoteables(ListVoteableRequest) returns (ListVoteablesResponse) {}
+  rpc ListVoteables(ListVoteablesRequest) returns (ListVoteablesResponse) {}
   rpc CastVote(CastVoteRequest) returns (CastVoteResponse) {}
 }
 
@@ -23,9 +23,9 @@ message CreateVoteableResponse {
   string uuid = 1;
 }
 
-message ListVoteableRequest { }
+message ListVoteablesRequest { }
 
-message ListVoteableResponse {
+message ListVoteablesResponse {
   repeated Voteable votables = 1;
 }
 
