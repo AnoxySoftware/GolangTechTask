@@ -28,9 +28,17 @@ We need you to:
 
 There are a few optional tasks you can complete if you really want to show off.
 
-1. Adding Observability 
+1. Adding Observability
 
     Adding structured logging and/or tracing and metrics.
     (The current tech used should be considered when choosing technologies)
 
 2. Adding Configuration and Secrets management
+
+
+## References
+
+Here are some useful links I used to aid my work:
+
+- [Behavior of server.GracefulStop() in golang](https://stackoverflow.com/questions/55797865/behavior-of-server-gracefulstop-in-golang)
+- [Testing a gRPC service](https://stackoverflow.com/questions/42102496/testing-a-grpc-service)
