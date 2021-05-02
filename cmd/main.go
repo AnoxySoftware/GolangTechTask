@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"net"
 	"os"
 	"os/signal"
@@ -12,19 +13,25 @@ import (
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/guregu/dynamo"
+	"github.com/peterbourgon/ff/v3"
 	"google.golang.org/grpc"
 )
 
-const (
-	endpoint = "http://127.0.0.1:8000"
-	region   = "region"
-	id       = "id"
-	secret   = "secret"
-	token    = "token"
-	port     = ":3000"
-)
-
 func main() {
+	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
+	var (
+		address  = fs.String("address", ":3000", "gRPC address")
+		endpoint = fs.String("endpoint", "http://127.0.0.1:8000", "DynamoDB endpoint")
+		id       = fs.String("id", "id", "AWS account ID")
+		region   = fs.String("region", "region", "AWS Region")
+		secret   = fs.String("secret", "secret", "AWS secret")
+		token    = fs.String("token", "token", "AWS token")
+	)
+
+	err := ff.Parse(fs, os.Args[1:])
+	if err != nil {
+		log.WithError(err).Fatal("parsing flags")
+	}
 	session, err := session.NewSession()
 	if err != nil {
 		log.WithError(err).Fatal("creating session")
@@ -32,13 +39,13 @@ func main() {
 
 	s := grpc.NewServer()
 
-	config := aws.NewConfig().WithEndpoint(endpoint).WithRegion(region).WithCredentials(credentials.NewStaticCredentials(id, secret, token))
+	config := aws.NewConfig().WithEndpoint(*endpoint).WithRegion(*region).WithCredentials(credentials.NewStaticCredentials(*id, *secret, *token))
 	db := dynamo.New(session, config)
 	srv := server.NewDynamodbServer(db)
 
 	pb.RegisterVotingServiceServer(s, srv)
 
-	listener, err := net.Listen("tcp", port)
+	listener, err := net.Listen("tcp", *address)
 	if err != nil {
 		log.WithError(err).Fatal("establishing listener")
 	}
