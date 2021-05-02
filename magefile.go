@@ -6,6 +6,7 @@ import (
 	"github.com/magefile/mage/sh"
 )
 
+// Protoc generates go files from the service protobuf
 func Protoc() error {
 	return sh.Run(
 		"protoc",
