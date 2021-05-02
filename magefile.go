@@ -15,3 +15,8 @@ func Protoc() error {
 		"api/service.proto",
 	)
 }
+
+// Test runs go test ./...
+func Test() error {
+	return sh.Run("go", "test", "./...")
+}
