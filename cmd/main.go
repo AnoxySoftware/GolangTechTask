@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/signal"
 
+	pb "github.com/Sacro/GolangTechTask/api"
 	"github.com/Sacro/GolangTechTask/internal/server"
 	"github.com/apex/log"
 	"github.com/aws/aws-sdk-go/aws"
@@ -12,8 +13,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/guregu/dynamo"
 	"google.golang.org/grpc"
-
-	pb "github.com/Sacro/GolangTechTask/api"
 )
 
 const (
