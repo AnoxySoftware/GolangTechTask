@@ -23,6 +23,7 @@ func main() {
 		address  = fs.String("address", ":3000", "gRPC address")
 		endpoint = fs.String("endpoint", "http://127.0.0.1:8000", "DynamoDB endpoint")
 		id       = fs.String("id", "id", "AWS account ID")
+		level    = fs.String("level", log.InfoLevel.String(), "Log level")
 		region   = fs.String("region", "region", "AWS Region")
 		secret   = fs.String("secret", "secret", "AWS secret")
 		token    = fs.String("token", "token", "AWS token")
@@ -32,23 +33,35 @@ func main() {
 	if err != nil {
 		log.WithError(err).Fatal("parsing flags")
 	}
+
+	if l, e := log.ParseLevel(*level); e != nil {
+		log.WithError(e).Fatal("setting log level")
+	} else {
+		log.SetLevel(l)
+		log.WithField("level", *level).Info("set log level")
+	}
+
 	session, err := session.NewSession()
 	if err != nil {
 		log.WithError(err).Fatal("creating session")
 	}
+	log.Info("created session")
 
 	s := grpc.NewServer()
 
 	config := aws.NewConfig().WithEndpoint(*endpoint).WithRegion(*region).WithCredentials(credentials.NewStaticCredentials(*id, *secret, *token))
+	log.WithField("config", config).Debug("dynamodb config")
 	db := dynamo.New(session, config)
 	srv := server.NewDynamodbServer(db)
 
 	pb.RegisterVotingServiceServer(s, srv)
+	log.Info("registered voting service server")
 
 	listener, err := net.Listen("tcp", *address)
 	if err != nil {
 		log.WithError(err).Fatal("establishing listener")
 	}
+	log.Info("established listener")
 
 	stopChan := make(chan os.Signal, 1)
 	errChan := make(chan error)
@@ -64,6 +77,7 @@ func main() {
 	}()
 
 	defer func() {
+		log.Info("graceful stop in progress")
 		s.GracefulStop()
 	}()
 
