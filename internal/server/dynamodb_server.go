@@ -55,9 +55,7 @@ func (s DynamodbServer) ListVoteables(context.Context, *api.ListVoteablesRequest
 	for _, r := range results {
 		// Convert answers map to slice
 		var answers = make([]string, len(r.Answers))
-		for _, a := range r.Answers {
-			answers = append(answers, a)
-		}
+		answers = append(answers, r.Answers...)
 
 		voteables = append(voteables, &api.Voteable{
 			Uuid:     r.UUID,
