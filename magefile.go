@@ -17,6 +17,7 @@ func GrpcurlCast() error {
 	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 	index := fs.Int64("index", 1, "answer index")
 	uuid := fs.String("uuid", "", "uuid")
+	ff.Parse(fs, os.Args[1:], ff.WithEnvVarNoPrefix())
 
 	data, err := json.Marshal(struct {
 		UUID  string `json:"uuid"`
