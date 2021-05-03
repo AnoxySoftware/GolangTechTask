@@ -23,10 +23,14 @@ message CreateVoteableResponse {
   string uuid = 1;
 }
 
-message ListVoteablesRequest { }
+message ListVoteablesRequest {
+  int64 page_size = 1;
+  string page_token = 2;
+ }
 
 message ListVoteablesResponse {
   repeated Voteable votables = 1;
+  optional string next_page_token = 2;
 }
 
 message CastVoteRequest {

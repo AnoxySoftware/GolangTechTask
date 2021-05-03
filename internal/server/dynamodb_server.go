@@ -2,6 +2,8 @@ package server
 
 import (
 	"context"
+	"encoding/base64"
+	"encoding/json"
 
 	"github.com/Sacro/GolangTechTask/api"
 	"github.com/Sacro/GolangTechTask/internal/models"
@@ -73,9 +75,31 @@ func (s DynamodbServer) CreateVoteable(ctx context.Context, r *api.CreateVoteabl
 	}, nil
 }
 
-func (s DynamodbServer) ListVoteables(context.Context, *api.ListVoteablesRequest) (*api.ListVoteablesResponse, error) {
+func (s DynamodbServer) ListVoteables(ctx context.Context, r *api.ListVoteablesRequest) (*api.ListVoteablesResponse, error) {
 	var results []models.Voteable
-	err := s.table.Scan().All(&results)
+	scan := s.table.Scan()
+
+	if r.PageSize > 0 {
+		scan = scan.SearchLimit(r.PageSize)
+	}
+
+	if r.PageToken != "" {
+		j, err := base64.StdEncoding.DecodeString(r.PageToken)
+		if err != nil {
+			return nil, err
+		}
+
+		log.WithField("json", string(j)).Debug("decoded pagetoken")
+
+		var pageToken dynamo.PagingKey
+		if err = json.Unmarshal(j, &pageToken); err != nil {
+			return nil, err
+		}
+
+		scan = scan.StartFrom(pageToken)
+	}
+
+	pagingKey, err := scan.AllWithLastEvaluatedKeyContext(ctx, &results)
 	if err != nil {
 		return nil, err
 	}
@@ -96,8 +120,18 @@ func (s DynamodbServer) ListVoteables(context.Context, *api.ListVoteablesRequest
 		})
 	}
 
+	j, err := json.Marshal(pagingKey)
+	if err != nil {
+		return nil, err
+	}
+
+	log.WithField("json", string(j)).Debug("encoded pagetoken")
+
+	encodedNextPageToken := base64.StdEncoding.EncodeToString(j)
+
 	return &api.ListVoteablesResponse{
-		Votables: voteables,
+		Votables:      voteables,
+		NextPageToken: &encodedNextPageToken,
 	}, nil
 
 }
