@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/Sacro/GolangTechTask/api"
 	"github.com/Sacro/GolangTechTask/internal/models"
@@ -17,7 +18,7 @@ type MockServer struct {
 func (s MockServer) CastVote(ctx context.Context, r *api.CastVoteRequest) (*api.CastVoteResponse, error) {
 	for _, v := range voteables {
 		if v.UUID == r.Uuid {
-			v.Votes[r.AnswerIndex]++
+			v.Votes[fmt.Sprint(r.AnswerIndex)]++
 		}
 	}
 

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"net"
 	"os"
@@ -18,6 +19,9 @@ import (
 )
 
 func main() {
+	ctx := context.Background()
+	ctx, cancel := context.WithCancel(ctx)
+
 	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 	var (
 		address  = fs.String("address", ":3000", "gRPC address")
@@ -52,7 +56,7 @@ func main() {
 	config := aws.NewConfig().WithEndpoint(*endpoint).WithRegion(*region).WithCredentials(credentials.NewStaticCredentials(*id, *secret, *token))
 	log.WithField("config", config).Debug("dynamodb config")
 	db := dynamo.New(session, config)
-	srv := server.NewDynamodbServer(db)
+	srv := server.NewDynamodbServer(ctx, db)
 
 	pb.RegisterVotingServiceServer(s, srv)
 	log.Info("registered voting service server")
@@ -76,15 +80,13 @@ func main() {
 		}
 	}()
 
-	defer func() {
-		log.Info("graceful stop in progress")
-		s.GracefulStop()
-	}()
-
 	select {
 	case err := <-errChan:
 		log.WithError(err).Fatal("running server")
 	case <-stopChan:
-		log.Info("stopping server")
+		log.Info("cancelling via context")
+		cancel()
+		log.Info("graceful stop in progress")
+		s.GracefulStop()
 	}
 }
