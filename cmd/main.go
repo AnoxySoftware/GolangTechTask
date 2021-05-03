@@ -33,7 +33,7 @@ func main() {
 		token    = fs.String("token", "token", "AWS token")
 	)
 
-	err := ff.Parse(fs, os.Args[1:])
+	err := ff.Parse(fs, os.Args[1:], ff.WithEnvVarNoPrefix())
 	if err != nil {
 		log.WithError(err).Fatal("parsing flags")
 	}
