@@ -1,40 +1,39 @@
 # Golang Tech Test
 
-As part of the recruitment process we want to know how you think, code and structure your work.
-In order to do that, we're going to ask you to complete this coding challenge.
-
-**Please do not spend more than 5 hours on this task**, as this would not be
-respectful of your time.
-
-**Please do not submit work as a PR as these are publicly visible**
-
 ## Task
 
-In the `api/` folder of this repo there is a basic `grpc` service definition for a voting service.
-This service contains RPCs for creating, listing and voting on `voteable` items.
+- Provided a `Go` implementation of the `gRPC` service in the `cmd/` directory.
 
-There is also a "hello world" go application in `cmd/` and a `docker-compose.yml` for running
-`Amazon DynamoDB` locally.
+- Implement a `DynamoDB` based store for this `gRPC` service
 
-We need you to:
+  This is implemented in `internal/server` and uses the dynamodb model in `internal/models`
 
-- Provide a `Go` implementation of the `GRPC` service in the `cmd/` directory of this repo.
-- Implement a `DynamoDB` based store for this `GRPC` service
 - Add pagination to the `ListVoteables` RPC call
+
+  This is included as part of the DynamoDB server, but not currently the mock server
+
 - Provide adequate test coverage for this simple service
 
+  There are currently tests to ensure the gRPC service is working, but not automated tests for the DynamoDB side, however there is an included [magefile](https://magefile.org/) in `magefile.go` which allows for easily running [grpcurl](https://github.com/fullstorydev/grpcurl)
 
-## How to impress us
+  Examples:
+  - `mage grpcurlList` - lists the voteables
+  - `mage grpcurlCreate` - creates a new voteable, can optionally take `QUESTION` and `ANSWERS` environment variables
+  - `mage grpcurlCast` - casts a vote, uses `INDEX` and `UUID` environment variables
 
-There are a few optional tasks you can complete if you really want to show off.
+## How to impress
 
-1. Adding Observability
+- Observability
 
-    Adding structured logging and/or tracing and metrics.
-    (The current tech used should be considered when choosing technologies)
+  - [Apex log](https://github.com/apex/log) is used to provide a structured logging API
 
-2. Adding Configuration and Secrets management
+  - [OpenTelemetry](https://github.com/open-telemetry/opentelemetry-go-contrib) is linked into the gRPC server to provide tracing, however there are no exporters configured currently.
 
+  - I ran out of time to implement metrics, but most of the required code should be there.
+
+- Configuration / Secrets management
+
+  - [ff](https://github.com/peterbourgon/ff) is used for neater configuration of flags, and also allows reading from the environment
 
 ## References
 
@@ -42,3 +41,4 @@ Here are some useful links I used to aid my work:
 
 - [Behavior of server.GracefulStop() in golang](https://stackoverflow.com/questions/55797865/behavior-of-server-gracefulstop-in-golang)
 - [Testing a gRPC service](https://stackoverflow.com/questions/42102496/testing-a-grpc-service)
+- [Common Design Patterns - List Pagination](https://cloud.google.com/apis/design/design_patterns#list_pagination)
