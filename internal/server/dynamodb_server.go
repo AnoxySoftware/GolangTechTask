@@ -7,71 +7,40 @@ import (
 	"github.com/Sacro/GolangTechTask/internal/models"
 	"github.com/apex/log"
 	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/google/uuid"
 	"github.com/guregu/dynamo"
 )
 
-const tableName = "voteables"
+const tableName = "Voteables"
 
 type DynamodbServer struct {
 	api.UnimplementedVotingServiceServer
 
-	db    *dynamo.DB
 	table dynamo.Table
 }
 
-func NewDynamodbServer(ctx context.Context, db *dynamo.DB) *DynamodbServer {
-	err := db.CreateTable(tableName, models.Voteable{}).RunWithContext(ctx)
+func NewDynamodbServer(db *dynamo.DB) *DynamodbServer {
+	err := db.CreateTable(tableName, models.Voteable{}).Run()
 	if err != nil {
 		// If ResourceInUseException is thrown our table already exists
-		log.WithField("err", err.(awserr.Error).Code()).Info("arg")
-		if err.(awserr.Error).Code() == "ResourceInUseException" {
-			log.Info("table exists")
-		} else {
-			log.WithError(err).Fatal("create table")
+		if err.(awserr.Error).Code() != "ResourceInUseException" {
+
+			log.WithError(err).Info("creating table")
 		}
-	} else {
-		log.WithError(err).Info("created table")
 	}
 
 	table := db.Table(tableName)
 
 	return &DynamodbServer{
-		db:    db,
 		table: table,
 	}
 }
 
 func (s DynamodbServer) CastVote(ctx context.Context, r *api.CastVoteRequest) (*api.CastVoteResponse, error) {
-
-	err := s.table.Update("UUID", r.Uuid).SetExpr("votes.#answerIndex", "votes + :val").RunWithContext(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	return &api.CastVoteResponse{}, nil
+	panic("not implemented")
 }
 
 func (s DynamodbServer) CreateVoteable(ctx context.Context, r *api.CreateVoteableRequest) (*api.CreateVoteableResponse, error) {
-	u, err := uuid.NewUUID()
-	if err != nil {
-		return nil, err
-	}
-
-	err = s.table.Put(models.Voteable{
-		UUID:     u.String(),
-		Votes:    make(map[string]int64),
-		Question: r.Question,
-		Answers:  r.Answers,
-	}).RunWithContext(ctx)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return &api.CreateVoteableResponse{
-		Uuid: u.String(),
-	}, nil
+	panic("not implemented")
 }
 
 func (s DynamodbServer) ListVoteables(context.Context, *api.ListVoteablesRequest) (*api.ListVoteablesResponse, error) {
@@ -86,7 +55,9 @@ func (s DynamodbServer) ListVoteables(context.Context, *api.ListVoteablesRequest
 	for _, r := range results {
 		// Convert answers map to slice
 		var answers = make([]string, len(r.Answers))
-		answers = append(answers, r.Answers...)
+		for i, a := range r.Answers {
+			answers[i] = a
+		}
 
 		voteables = append(voteables, &api.Voteable{
 			Uuid:     r.UUID,
