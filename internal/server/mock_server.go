@@ -48,7 +48,3 @@ func (s MockServer) ListVoteables(context.Context, *api.ListVoteablesRequest) (*
 		Votables: v,
 	}, nil
 }
-
-func (s MockServer) mustEmbedUnimplementedVotingServiceServer() {
-	panic("not implemented")
-}
