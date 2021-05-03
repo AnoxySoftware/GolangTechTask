@@ -15,7 +15,13 @@ type MockServer struct {
 }
 
 func (s MockServer) CastVote(ctx context.Context, r *api.CastVoteRequest) (*api.CastVoteResponse, error) {
-	panic("not implemented")
+	for _, v := range voteables {
+		if v.UUID == r.Uuid {
+			v.Votes[r.AnswerIndex]++
+		}
+	}
+
+	return nil, nil
 }
 
 func (s MockServer) CreateVoteable(ctx context.Context, r *api.CreateVoteableRequest) (*api.CreateVoteableResponse, error) {

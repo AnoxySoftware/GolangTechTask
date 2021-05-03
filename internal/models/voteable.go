@@ -1,8 +1,9 @@
 package models
 
-// Voteable ...
+// Voteable holds questions, answers, and the votes given
 type Voteable struct {
+	Votes    map[int64]int64
 	UUID     string `dynamo:"ID,hash"`
-	Answers  map[string]string
 	Question string
+	Answers  []string
 }
