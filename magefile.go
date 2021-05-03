@@ -12,8 +12,28 @@ import (
 )
 
 func GrpcurlCast() error {
+	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
+	index := fs.Int64("index", 1, "answer index")
+	uuid := fs.String("uuid", "af638132-ac1b-11eb-918a-da50b4b7f662", "uuid")
+
+	data, err := json.Marshal(struct {
+		UUID  string `json:"uuid"`
+		Index int64  `json:"answer_index"`
+	}{
+		*uuid,
+		*index,
+	})
+	if err != nil {
+		return err
+	}
+
 	return sh.RunV(
-		"grpcurl", "-plaintext", "-proto", "api/service.proto", "localhost:3000", "VotingService/CastVote",
+		"grpcurl",
+		"-d",
+		string(data),
+		"-plaintext",
+		"-proto", "api/service.proto",
+		"localhost:3000", "VotingService/CastVote",
 	)
 }
 
