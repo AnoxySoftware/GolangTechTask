@@ -4,10 +4,11 @@ import (
 	"context"
 
 	"github.com/Sacro/GolangTechTask/api"
+	"github.com/Sacro/GolangTechTask/internal/models"
 	"github.com/google/uuid"
 )
 
-var voteables []*api.Voteable
+var voteables []*models.Voteable
 
 type MockServer struct {
 	api.UnimplementedVotingServiceServer
@@ -23,8 +24,8 @@ func (s MockServer) CreateVoteable(ctx context.Context, r *api.CreateVoteableReq
 		return nil, err
 	}
 
-	voteables = append(voteables, &api.Voteable{
-		Uuid:     u.String(),
+	voteables = append(voteables, &models.Voteable{
+		UUID:     u.String(),
 		Question: r.Question,
 		Answers:  r.Answers,
 	})
@@ -33,9 +34,18 @@ func (s MockServer) CreateVoteable(ctx context.Context, r *api.CreateVoteableReq
 }
 
 func (s MockServer) ListVoteables(context.Context, *api.ListVoteablesRequest) (*api.ListVoteablesResponse, error) {
+	var v = make([]*api.Voteable, len(voteables))
+
+	for i, voteable := range voteables {
+		v[i] = &api.Voteable{
+			Uuid:     voteable.UUID,
+			Question: voteable.Question,
+			Answers:  voteable.Answers,
+		}
+	}
 
 	return &api.ListVoteablesResponse{
-		Votables: voteables,
+		Votables: v,
 	}, nil
 }
 
